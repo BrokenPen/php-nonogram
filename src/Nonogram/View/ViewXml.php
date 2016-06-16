@@ -15,6 +15,8 @@ use Nonogram\Cell\AnyCell;
  */
 class ViewXml extends AbstractView implements ViewInterface, ViewWritableInterface {
 
+    private static $chars = array('X','.','*','%','@');
+
     /**
      * @return string
      */
@@ -32,23 +34,36 @@ class ViewXml extends AbstractView implements ViewInterface, ViewWritableInterfa
             '<title>'.$this->grid->getTitle().'</title>' . PHP_EOL .
             '<author>'.$this->grid->getAuthor().'</author>' . PHP_EOL .
             '<authorid></authorid>' . PHP_EOL .
-            '<copyright>'.str_replace('(c) ', '&copy; ', $this->grid->getCopyright()).'</copyright>' . PHP_EOL .
-            '<description>' . PHP_EOL .
+            '<copyright>'.str_replace('(c) ', '&copy; ', $this->grid->getCopyright()).'</copyright>' . PHP_EOL;
+        if($this->grid->getDescription()) {
+            $outStr .= '<description>' . PHP_EOL .
             $this->grid->getDescription() . PHP_EOL .
-            '</description>' . PHP_EOL .
-            PHP_EOL .
-            '<color name="white" char=".">fff</color>' . PHP_EOL .
-            '<color name="black" char="X">000</color>' . PHP_EOL .
+            '</description>' . PHP_EOL;
+        }
+            PHP_EOL;
+        $labels = $this->grid->getLabels();
+        if($labels instanceof \Nonogram\Label\LabelColored) {
+            $colorList = $labels->getColorList();
+            foreach($colorList as $colorKey => $color) {
+                $outStr .=
+                    '<color name="'.$color->getName().'" char="'.self::$chars[$colorKey].'">'.$color->getHex().'</color>' . PHP_EOL;
+            }
+        }
+        $outStr .=
             PHP_EOL .
             '<clues type="columns">' . PHP_EOL;
 
-        $labels = $this->grid->getLabels();
-        foreach($labels->getCol() as $col) {
+        $cols = $labels instanceof \Nonogram\Label\LabelColored ? $labels->getColObjects() : $labels->getCol();
+        foreach($cols as $col) {
             if(empty($col)) {
                 $outStr .= '<line></line>' . PHP_EOL;
                 continue;
             }
-            $outStr .= '<line><count>' . implode('</count><count>', $col) . '</count></line>' . PHP_EOL;
+            $outStr .= '<line>' . PHP_EOL;
+            foreach($col as $count) {
+                $outStr .= '<count'.($count instanceof \Nonogram\Label\Count ? ' color="'.$count->getColor()->getName().'"' : '').'>' . ($count instanceof \Nonogram\Label\Count ? $count->getNumber() : $count) . '</count>' . PHP_EOL;
+            }
+            $outStr .= '</line>' . PHP_EOL;
         }
 
         $outStr .=
@@ -56,12 +71,17 @@ class ViewXml extends AbstractView implements ViewInterface, ViewWritableInterfa
             PHP_EOL .
             '<clues type="rows">' . PHP_EOL;
 
-        foreach($labels->getRow() as $row) {
+        $rows = $labels instanceof \Nonogram\Label\LabelColored ? $labels->getRowObjects() : $labels->getRow();
+        foreach($rows as $row) {
             if(empty($row)) {
                 $outStr .= '<line></line>' . PHP_EOL;
                 continue;
             }
-            $outStr .= '<line><count>' . implode('</count><count>', $row) . '</count></line>' . PHP_EOL;
+            $outStr .= '<line>' . PHP_EOL;
+            foreach($row as $count) {
+                $outStr .= '<count'.($count instanceof \Nonogram\Label\Count ? ' color="'.$count->getColor()->getName().'"' : '').'>' . ($count instanceof \Nonogram\Label\Count ? $count->getNumber() : $count) . '</count>' . PHP_EOL;
+            }
+            $outStr .= '</line>' . PHP_EOL;
         }
 
         $outStr .= '</clues>' . PHP_EOL;

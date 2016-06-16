@@ -9,14 +9,14 @@ class Label
      *
      * @var array
      */
-    private $col = array();
+    protected $col = array();
 
     /**
      * Numeric row labels = tuple of numbers
      *
      * @var array
      */
-    private $row = array();
+    protected $row = array();
 
     /**
      * @var int
@@ -103,10 +103,8 @@ class Label
      */
     private function getLabels($horizontal, $index)
     {
-        if ($horizontal) {
-            return $this->row[$index-1];
-        }
-        return $this->col[$index-1];
+        $seq = $horizontal ? $this->getRow() : $this->getCol();
+        return $seq[$index-1];
     }
 
     /**

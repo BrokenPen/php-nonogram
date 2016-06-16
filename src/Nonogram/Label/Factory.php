@@ -36,16 +36,25 @@ class Factory implements \Symfony\Component\DependencyInjection\ContainerAwareIn
      */
     public function getFromRaw(array $labelsRaw)
     {
-        if(empty($labelsRaw)) {
+        if (empty($labelsRaw) || !isset($labelsRaw['columns']) || !isset($labelsRaw['rows'])) {
             throw new \InvalidArgumentException('empty label array');
         }
 
-        $label = $this->container->get('label');
+        $colored = false;
+        foreach(array('columns', 'rows') as $direction) {
+            foreach ($labelsRaw[$direction] as $sequence) {
+                foreach($sequence as $count) {
+                    $colored = $count instanceof Count;
+                    break 3;
+                }
+            }
+        }
+
+        $label = $this->container->get($colored ? 'label_colored' : 'label');
 
         $label->setCol($labelsRaw['columns']);
         $label->setRow($labelsRaw['rows']);
 
         return $label;
     }
-
 }
