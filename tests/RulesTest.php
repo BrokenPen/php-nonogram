@@ -22,7 +22,14 @@ class RulesTest extends AbstractTest
         /* @var $solver \Nonogram\Solver\SolverJ54 */
         /* @var $labels \Nonogram\Label\Label */
 
-        $field = $solver->solve($labels, $fieldOverride);
+        /* @var $grid \Nonogram\Grid\Grid */
+        $grid = $this->container->get('grid');
+        $grid->setLabels($labels);
+
+        $result = $solver->solve($grid, $fieldOverride);
+        $this->assertTrue($result);
+
+        $field = $grid->getCells();
         foreach ($expected as $assumption) {
             $this->assertEquals($assumption['val'], $field[0][$assumption['pos']]->getType(), $className . ': at pos ' . $assumption['pos']);
         }
@@ -66,7 +73,13 @@ class RulesTest extends AbstractTest
         $ranges = &$runRangeOverride->getRangesForRow(1);
         $ranges = $injectRanges;
 
-        $solver->solve($labels, $fieldOverride, $runRangeOverride);
+        /* @var $grid \Nonogram\Grid\Grid */
+        $grid = $this->container->get('grid');
+        $grid->setLabels($labels);
+
+        $result = $solver->solve($grid, $fieldOverride, $runRangeOverride);
+        $this->assertTrue($result);
+        
         $this->assertEquals($expectedRanges, $ranges, $className);
     }
 

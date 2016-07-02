@@ -2,7 +2,7 @@
 
 namespace Nonogram\Cell;
 
-class CellBox implements AnyCell
+class CellBox extends AbstractCell implements AnyCell
 {
 
     /**

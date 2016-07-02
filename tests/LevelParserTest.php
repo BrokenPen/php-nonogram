@@ -100,8 +100,7 @@ rows:
     - [2]
     - [5]
 EOD;
-
-
+        
         return array(
             array('\Nonogram\LevelParser\LevelParserDat', $rawDataDat, array('BBEEE', 'BBEEE', 'BBEEE', 'BBEEE', 'BBBBB')),
             array('\Nonogram\LevelParser\LevelParserLua', $rawDataLua, array('BBEEE', 'BBEEE', 'BBEEE', 'BBEEE', 'BBBBB')),
@@ -119,19 +118,11 @@ EOD;
      */
     public function testParser($className, $rawData, $expectedRaw, $expectedMetaData = array())
     {
-        if('\Nonogram\LevelParser\LevelParserYaml' === $className) {
-            $parser = new $className($this->labelFactory, new \Symfony\Component\Yaml\Parser());
-        }
-        elseif('\Nonogram\LevelParser\LevelParserPdf' === $className) {
-            $parser = new $className($this->labelFactory, $this->container->get('color_factory'));
-        }
-        else {
-            $parser = new $className($this->labelFactory, $this->cellFactory);
-        }
+        $parser = $this->getParserInstance($className);
         $this->assertInstanceOf($className, $parser);
         $parser->setRawData($rawData);
 
-        if($parser instanceof \Nonogram\LevelParser\AbstractLevelParserGrid) {
+        if($parser instanceof \Nonogram\LevelParser\AbstractLevelParserGrid && $parser->hasGrid()) {
             $actual = $parser->getGrid();
             $expectedField = array();
             foreach($expectedRaw as $expectedRowRaw) {
@@ -152,6 +143,24 @@ EOD;
             }
         }
 
+    }
+
+    /**
+     * @param $className
+     * @return mixed
+     */
+    private function getParserInstance($className)
+    {
+        if ('\Nonogram\LevelParser\LevelParserYaml' === $className) {
+            $parser = new $className($this->labelFactory, new \Symfony\Component\Yaml\Parser());
+        } elseif ('\Nonogram\LevelParser\LevelParserPdf' === $className) {
+            $parser = new $className($this->labelFactory, $this->container->get('color_factory'));
+        } elseif ('\Nonogram\LevelParser\LevelParserXml' === $className) {
+            $parser = new $className($this->labelFactory, $this->cellFactory, $this->getParserInstance('\Nonogram\LevelParser\LevelParserDat'));
+        } else {
+            $parser = new $className($this->labelFactory, $this->cellFactory);
+        }
+        return $parser;
     }
 
 }

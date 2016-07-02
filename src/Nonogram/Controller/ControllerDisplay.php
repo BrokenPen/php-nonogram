@@ -30,8 +30,9 @@ class ControllerDisplay extends AbstractSubController implements AnyController
     {
         echo PHP_EOL . $urn . PHP_EOL;
         echo $this->view->drawField();
-        
-        $solvingStatistics = $this->view->getGrid()->getSolvingStatistics();
+
+        $grid = $this->view->getGrid();
+        $solvingStatistics = $grid instanceof \Nonogram\Grid\Grid ? $grid->getSolvingStatistics() : null;
         if(null !== $solvingStatistics) {
             $this->addSolvingStatistics($solvingStatistics);
         }

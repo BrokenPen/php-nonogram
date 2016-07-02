@@ -13,7 +13,7 @@ use Nonogram\Solver\RunRange\RunRange;
  *
  * @package Nonogram\Solver
  */
-class SolverJ54 implements AnySolver
+class SolverJ54 extends AbstractSolver implements AnySolver
 {
     /**
      * @var \Nonogram\Label\Label
@@ -34,12 +34,6 @@ class SolverJ54 implements AnySolver
      * @var \Nonogram\Solver\RunRange\RunRange
      */
     private $runRanges;
-
-    /**
-     * counts how many updates come from each rule
-     * @var array
-     */
-    private $solvingStatistics = array();
 
     /**
      * Time in microseconds it took to solve the puzzle
@@ -152,15 +146,17 @@ class SolverJ54 implements AnySolver
      * @return array
      */
     public function solve(
-        \Nonogram\Label\Label $labels,
+        \Nonogram\Grid\Grid $grid,
         array $fieldOverride = array(),
         RunRange $runRangeOverride = null
     )
     {
         $timeStart = microtime(true);
+        $labels = $grid->getLabels();
         $this->init($labels, $fieldOverride, $runRangeOverride);
-        if($labels instanceof \Nonogram\Label\LabelColored && $labels->getColorCount() > 1) {
-            return $this->field;
+        if($labels->hasHiddenCounts() || ($labels instanceof \Nonogram\Label\LabelColored && $labels->getColorCount() > 1)) {
+            $grid->setCells($this->field);
+            return false;
         }
         $iterations = 0;
 
@@ -183,7 +179,8 @@ class SolverJ54 implements AnySolver
             }
 
             if (count($this->field) === 1) {
-                return $this->field;
+                $grid->setCells($this->field);
+                return true;
             }
 
             //iterate over all columns
@@ -211,7 +208,8 @@ class SolverJ54 implements AnySolver
         $this->lastSolvingTime = microtime(true) - $timeStart;
         $this->solvingStatistics['Iterations'] = $iterations;
         $this->solvingStatistics['Solving time'] = $this->lastSolvingTime;
-        return $this->field;
+        $grid->setCells($this->field);
+        return true;
     }
 
     private function processUpdateCounter(AbstractRuleJ54 $rule)
@@ -226,13 +224,4 @@ class SolverJ54 implements AnySolver
         return $updates;
     }
 
-    /**
-     * Getter for property "ruleActionCounter"
-     *
-     * @return array
-     */
-    public function getSolvingStatistics()
-    {
-        return $this->solvingStatistics;
-    }
 }

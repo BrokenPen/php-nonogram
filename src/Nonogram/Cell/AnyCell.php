@@ -85,4 +85,15 @@ interface AnyCell
      * @return bool
      */
     public function isSolved();
+
+    /**
+     * @return \Nonogram\Label\Color\Color
+     */
+    public function getColor();
+
+    /**
+     * @param \Nonogram\Label\Color\Color $color
+     */
+    public function setColor(\Nonogram\Label\Color\Color $color);
+
 }
